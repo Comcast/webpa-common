@@ -1,5 +1,8 @@
 package wrp
 
+import (
+	"time"
+)
 //go:generate codecgen -st "wrp" -o messages_codec.go messages.go
 
 // Typed is implemented by any WRP type which is associated with a MessageType.  All
@@ -50,6 +53,12 @@ type Routable interface {
 	Response(newSource string, requestDeliveryResponse int64) Routable
 }
 
+type Money_Span struct {
+    Name string
+    Start time.Time
+    Duration time.Duration
+}
+
 // Message is the union of all WRP fields, made optional (except for Type).  This type is
 // useful for transcoding streams, since deserializing from non-msgpack formats like JSON
 // has some undesirable side effects.
@@ -73,7 +82,7 @@ type Message struct {
 	RequestDeliveryResponse *int64            `wrp:"rdr,omitempty"`
 	Headers                 []string          `wrp:"headers,omitempty"`
 	Metadata                map[string]string `wrp:"metadata,omitempty"`
-	Spans                   [][]string        `wrp:"spans,omitempty"`
+	Spans                   []Money_Span      `wrp:"spans,omitempty"`
 	IncludeSpans            *bool             `wrp:"include_spans,omitempty"`
 	Path                    string            `wrp:"path,omitempty"`
 	Payload                 []byte            `wrp:"payload,omitempty"`
@@ -165,7 +174,7 @@ type SimpleRequestResponse struct {
 	RequestDeliveryResponse *int64            `wrp:"rdr,omitempty"`
 	Headers                 []string          `wrp:"headers,omitempty"`
 	Metadata                map[string]string `wrp:"metadata,omitempty"`
-	Spans                   [][]string        `wrp:"spans,omitempty"`
+	Spans                   []Money_Span      `wrp:"spans,omitempty"`
 	IncludeSpans            *bool             `wrp:"include_spans,omitempty"`
 	Payload                 []byte            `wrp:"payload,omitempty"`
 	PartnerIDs              []string          `wrp:"partner_ids,omitempty"`
@@ -291,7 +300,7 @@ type CRUD struct {
 	ContentType             string            `wrp:"content_type,omitempty"`
 	Headers                 []string          `wrp:"headers,omitempty"`
 	Metadata                map[string]string `wrp:"metadata,omitempty"`
-	Spans                   [][]string        `wrp:"spans,omitempty"`
+	Spans                   []Money_Span      `wrp:"spans,omitempty"`
 	IncludeSpans            *bool             `wrp:"include_spans,omitempty"`
 	Status                  *int64            `wrp:"status,omitempty"`
 	RequestDeliveryResponse *int64            `wrp:"rdr,omitempty"`

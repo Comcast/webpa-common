@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
+	"time"
 	"github.com/Comcast/webpa-common/wrp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -23,6 +23,7 @@ func testNewMessageFromHeadersSuccess(t *testing.T) {
 		expectedStatus                  int64 = 928
 		expectedRequestDeliveryResponse int64 = 1
 		expectedIncludeSpans            bool  = true
+		expectedSpans []wrp.Money_Span = []wrp.Money_Span{{"foo", time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC), time.Duration(223)},{"bar", time.Date(2018, 1, 2, 12, 0, 0, 0, time.UTC), time.Duration(211)},}
 
 		testData = []struct {
 			header   http.Header
@@ -56,10 +57,7 @@ func testNewMessageFromHeadersSuccess(t *testing.T) {
 					StatusHeader:                  []string{strconv.FormatInt(expectedStatus, 10)},
 					RequestDeliveryResponseHeader: []string{strconv.FormatInt(expectedRequestDeliveryResponse, 10)},
 					IncludeSpansHeader:            []string{strconv.FormatBool(expectedIncludeSpans)},
-					SpanHeader: []string{
-						"foo, bar, moo",
-						"goo, gar, hoo",
-					},
+					SpanHeader:                    []string{expectedSpans[0].Name+","+strconv.FormatInt(expectedSpans[0].Start.Unix(),10)+","+expectedSpans[0].Duration.String(),expectedSpans[1].Name+","+strconv.FormatInt(expectedSpans[1].Start.Unix(),10)+","+expectedSpans[1].Duration.String(),},
 					AcceptHeader: []string{"application/json"},
 					PathHeader:   []string{"/foo/bar"},
 				},
@@ -72,10 +70,7 @@ func testNewMessageFromHeadersSuccess(t *testing.T) {
 					Status:                  &expectedStatus,
 					RequestDeliveryResponse: &expectedRequestDeliveryResponse,
 					IncludeSpans:            &expectedIncludeSpans,
-					Spans: [][]string{
-						{"foo", "bar", "moo"},
-						{"goo", "gar", "hoo"},
-					},
+					Spans: 			 expectedSpans,
 					Accept: "application/json",
 					Path:   "/foo/bar",
 				},
@@ -225,6 +220,7 @@ func TestAddMessageHeaders(t *testing.T) {
 		expectedStatus                  int64 = 123
 		expectedRequestDeliveryResponse int64 = 2
 		expectedIncludeSpans            bool  = true
+		expectedSpans []wrp.Money_Span = []wrp.Money_Span{{"foo", time.Date(2018, 2, 1, 12, 0, 0, 0, time.UTC), time.Duration(211)}}
 
 		testData = []struct {
 			message  wrp.Message
@@ -247,7 +243,7 @@ func TestAddMessageHeaders(t *testing.T) {
 					Status:                  &expectedStatus,
 					RequestDeliveryResponse: &expectedRequestDeliveryResponse,
 					IncludeSpans:            &expectedIncludeSpans,
-					Spans:                   [][]string{{"foo", "bar", "graar"}},
+					Spans:                   expectedSpans,
 					Accept:                  "application/json",
 					Path:                    "/foo/bar",
 				},
@@ -259,7 +255,7 @@ func TestAddMessageHeaders(t *testing.T) {
 					StatusHeader:                  []string{strconv.FormatInt(expectedStatus, 10)},
 					RequestDeliveryResponseHeader: []string{strconv.FormatInt(expectedRequestDeliveryResponse, 10)},
 					IncludeSpansHeader:            []string{strconv.FormatBool(expectedIncludeSpans)},
-					SpanHeader:                    []string{"foo,bar,graar"},
+					SpanHeader:                    []string{expectedSpans[0].Name+","+strconv.FormatInt(expectedSpans[0].Start.Unix(),10)+","+expectedSpans[0].Duration.String()},
 					AcceptHeader:                  []string{"application/json"},
 					PathHeader:                    []string{"/foo/bar"},
 				},

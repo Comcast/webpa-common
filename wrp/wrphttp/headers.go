@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
+	"time"
 	"github.com/Comcast/webpa-common/wrp"
 )
 
@@ -75,23 +75,41 @@ func getBoolHeader(h http.Header, n string) *bool {
 	return &b
 }
 
-func getSpans(h http.Header) [][]string {
-	var spans [][]string
+func getSpans(h http.Header) []wrp.Money_Span {
+    var spans []wrp.Money_Span
+    for _, value := range h[SpanHeader]{
+        fields := strings.Split(value, ",")
+        var Name string
+        var Start time.Time
+        var Duration time.Duration
+        if len(fields) != 3 {
+            panic(fmt.Errorf("Invalid %s header: %s", SpanHeader, value))
+        }
 
-	for _, value := range h[SpanHeader] {
-		fields := strings.Split(value, ",")
-		if len(fields) != 3 {
-			panic(fmt.Errorf("Invalid %s header: %s", SpanHeader, value))
-		}
-
-		for i := 0; i < len(fields); i++ {
-			fields[i] = strings.TrimSpace(fields[i])
-		}
-
-		spans = append(spans, fields)
-	}
-
-	return spans
+        for i := 0; i < len(fields); i++ {
+            fields[i] = strings.TrimSpace(fields[i])
+            switch i {
+                case 0:
+                    name := fields[i]
+                    Name = name
+                case 1:
+                    start, err := strconv.ParseInt(fields[i], 10, 64)
+                    if err != nil {
+                        panic(err)
+                    }
+                    Start = time.Unix(start, 0).UTC()
+                case 2:
+                    fields[i] = strings.Trim(fields[i], "ns")
+                    duration, err := strconv.ParseInt(fields[i], 10, 64)
+                    if err != nil {
+                        panic(err)
+                    }
+                    Duration = time.Duration(duration)
+            }
+        }
+        spans = append(spans, wrp.Money_Span{Name, Start, Duration})
+    }
+    return spans
 }
 
 func readPayload(h http.Header, p io.Reader) ([]byte, string) {
@@ -203,7 +221,7 @@ func AddMessageHeaders(h http.Header, m *wrp.Message) {
 	}
 
 	for _, s := range m.Spans {
-		h.Add(SpanHeader, strings.Join(s, ","))
+		h.Add(SpanHeader, (s.Name+","+strconv.FormatInt(s.Start.Unix(),10)+","+s.Duration.String()))
 	}
 
 	if len(m.Accept) > 0 {

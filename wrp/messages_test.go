@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-
+	"time"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -142,7 +142,7 @@ func TestMessage(t *testing.T) {
 				TransactionUUID: "DEADBEEF",
 				Headers:         []string{"Header1", "Header2"},
 				Metadata:        map[string]string{"name": "value"},
-				Spans:           [][]string{{"1", "2"}, {"3"}},
+				Spans:           []Money_Span{{"abc", time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC), time.Duration(223),}, {"dfc",time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC),time.Duration(224),}},
 				Payload:         []byte{1, 2, 3, 4, 0xff, 0xce},
 				PartnerIDs:      []string{"foo"},
 			},
@@ -324,7 +324,7 @@ func TestSimpleRequestResponse(t *testing.T) {
 				TransactionUUID: "DEADBEEF",
 				Headers:         []string{"Header1", "Header2"},
 				Metadata:        map[string]string{"name": "value"},
-				Spans:           [][]string{{"1", "2"}, {"3"}},
+				Spans:           []Money_Span{{"abc", time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC), time.Duration(234),}, {"dfc",time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC),time.Duration(224),}},
 				Payload:         []byte{1, 2, 3, 4, 0xff, 0xce},
 			},
 		}
@@ -546,7 +546,7 @@ func TestCRUD(t *testing.T) {
 				TransactionUUID: "DEADBEEF",
 				Headers:         []string{"Header1", "Header2"},
 				Metadata:        map[string]string{"name": "value"},
-				Spans:           [][]string{{"1", "2"}, {"3"}},
+				Spans:           []Money_Span{{"abc", time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC), time.Duration(234),}, {"dfc",time.Date(2018, 1, 1, 12, 0, 0, 0, time.UTC),time.Duration(224),}},
 			},
 		}
 	)
