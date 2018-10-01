@@ -31,6 +31,12 @@ type Options struct {
 	// meaning that logfmt output is used.
 	JSON bool `json:"json"`
 
+	// FormatType is to change the output style. The default is "term", for ease of use for debuging.
+	// Another option is "fmt", for plain txt output
+	FormatType string `json:"formatType"`
+
+	TermOptions TextFormatter `json:"termOptions"`
+
 	// Level is the error level to output: ERROR, INFO, WARN, or DEBUG.  Any unrecognized string,
 	// including the empty string, is equivalent to passing ERROR.
 	Level string `json:"level"`
@@ -54,7 +60,25 @@ func (o *Options) loggerFactory() func(io.Writer) log.Logger {
 		return log.NewJSONLogger
 	}
 
-	return log.NewLogfmtLogger
+	if o != nil {
+		switch o.FormatType {
+		case "fmt":
+			return log.NewLogfmtLogger
+		case "term":
+			return o.termLogger
+		}
+	}
+
+	return func(writer io.Writer) log.Logger {
+		return NewReformatLogger(writer, &TextFormatter{
+			DisableLevelTruncation: false,
+			DisableColors:          false,
+		})
+	}
+}
+
+func (o *Options) termLogger(writer io.Writer) log.Logger {
+	return NewReformatLogger(writer, &o.TermOptions)
 }
 
 func (o *Options) level() string {

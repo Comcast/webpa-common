@@ -3,7 +3,7 @@ import:
 - package: github.com/justinas/alice
   version: 03f45bd4b7dad4734bc4620e46a35789349abb20
 - package: github.com/SermoDigital/jose
-  version: 1.1
+  version: "1.1"
   subpackages:
   - crypto
   - jws
@@ -37,6 +37,8 @@ import:
   version: 1.0.0
 - package: github.com/spf13/viper
   version: v1.0.0
+- package: github.com/spf13/cast
+  version: v1.2.0
 - package: github.com/samuel/go-zookeeper
   version: c4fab1ac1bec58281ad0667dc3f0907a9476ac47
 - package: github.com/hashicorp/consul
@@ -63,3 +65,5 @@ import:
   - service
 - package: github.com/prometheus/client_golang
   version: v0.9.0-pre1
+- package: github.com/ttacon/chalk
+  version: v0.1

@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"bytes"
 )
 
 func testOptionsLoggerFactory(t *testing.T) {
@@ -60,4 +61,42 @@ func TestOptions(t *testing.T) {
 	t.Run("LoggerFactory", testOptionsLoggerFactory)
 	t.Run("Output", testOptionsOutput)
 	t.Run("Level", testOptionsLevel)
+}
+
+func TestOptionsWithReformatLogger(t *testing.T) {
+	assert := assert.New(t)
+
+	var buf bytes.Buffer
+
+	o := &Options{
+		File:       StdoutFile,
+		FormatType: "term",
+		TermOptions: TextFormatter{
+			DisableColors: true,
+			DisableLevelTruncation: false,
+		},
+	}
+	logger := o.loggerFactory()(&buf)
+	assert.NotNil(logger)
+	logger.Log("msg", "testing")
+	t.Log(buf.String())
+	assert.NotNil(buf.String())
+	assert.Equal("INFO[00000] testing                                     \n", buf.String())
+}
+
+func TestOptionsForOldFmt(t *testing.T){
+	assert := assert.New(t)
+
+	var buf bytes.Buffer
+
+	o := &Options{
+		File:       StdoutFile,
+		FormatType: "fmt",
+	}
+	logger := o.loggerFactory()(&buf)
+	assert.NotNil(logger)
+	logger.Log("msg", "testing")
+	t.Log(buf.String())
+	assert.NotNil(buf.String())
+	assert.Equal("msg=testing\n", buf.String())
 }
