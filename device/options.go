@@ -67,6 +67,9 @@ type Options struct {
 
 	// Now is the closure used to determine the current time.  If not set, time.Now is used.
 	Now func() time.Time
+
+	// OptionalFuncs holds template style functions for optional execution patterns within the manager
+	TemplateFuncs []interface{}
 }
 
 func (o *Options) upgrader() *websocket.Upgrader {
@@ -156,4 +159,12 @@ func (o *Options) now() func() time.Time {
 	}
 
 	return time.Now
+}
+
+func (o *Options) templateFuncs() []interface{} {
+	if o != nil && o.TemplateFuncs != nil {
+		return o.TemplateFuncs
+	}
+
+	return nil
 }

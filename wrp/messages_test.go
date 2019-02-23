@@ -14,6 +14,30 @@ var (
 	allFormats = []Format{JSON, Msgpack}
 )
 
+func testMessageHasMoney(t *testing.T) {
+	var (
+		assert  = assert.New(t)
+		message Message
+		traces  = make([]map[string]string, 1)
+	)
+
+	for _, _ = range traces {
+		_ = map[string]string{
+			"money": "money",
+		}
+	}
+
+	if message.HasMoney() == assert.Nil(message.Traces) {
+		t.Fatalf("Message, %v, should be nil", message)
+	}
+
+	// include money
+	message.Traces = traces
+	if !message.HasMoney() {
+		t.Fatalf("Message, %v, should not be nil", message)
+	}
+}
+
 func testMessageSetStatus(t *testing.T) {
 	var (
 		assert  = assert.New(t)
@@ -105,6 +129,7 @@ func testMessageEncode(t *testing.T, f Format, original Message) {
 }
 
 func TestMessage(t *testing.T) {
+	t.Run("HasMoney", testMessageHasMoney)
 	t.Run("SetStatus", testMessageSetStatus)
 	t.Run("SetRequestDeliveryResponse", testMessageSetRequestDeliveryResponse)
 	t.Run("SetIncludeSpans", testMessageSetIncludeSpans)

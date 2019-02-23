@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -110,8 +111,9 @@ func NewManager(o *Options) Manager {
 		deviceMessageQueueSize: o.deviceMessageQueueSize(),
 		pingPeriod:             o.pingPeriod(),
 
-		listeners: o.listeners(),
-		measures:  measures,
+		listeners:     o.listeners(),
+		measures:      measures,
+		templateFuncs: o.templateFuncs(),
 	}
 }
 
@@ -132,8 +134,9 @@ type manager struct {
 	deviceMessageQueueSize int
 	pingPeriod             time.Duration
 
-	listeners []Listener
-	measures  Measures
+	listeners     []Listener
+	measures      Measures
+	templateFuncs []interface{}
 }
 
 func (m *manager) Connect(response http.ResponseWriter, request *http.Request, responseHeader http.Header) (Interface, error) {
@@ -318,6 +321,17 @@ func (m *manager) readPump(d *device, r ReadCloser, closeOnce *sync.Once) {
 
 		if message.Type == wrp.SimpleRequestResponseMessageType {
 			m.measures.RequestResponse.Add(1.0)
+		}
+
+		// invoke money by injecting a tracker into event's context
+		if message.HasMoney() {
+			for i, z := range m.templateFuncs {
+				switch z.(type) {
+				case func(*wrp.Message) context.Context:
+					f := z.(func(*wrp.Message) context.Context)
+					event = event.WithContext(f(message))
+				}
+			}
 		}
 
 		// update any waiting transaction

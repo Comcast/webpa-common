@@ -63,23 +63,24 @@ type Routable interface {
 // For server code that needs to read one format and emit another, use this struct as it allows
 // client code to transcode without knowledge of the exact type of message.
 type Message struct {
-	Type                    MessageType       `wrp:"msg_type"`
-	Source                  string            `wrp:"source,omitempty"`
-	Destination             string            `wrp:"dest,omitempty"`
-	TransactionUUID         string            `wrp:"transaction_uuid,omitempty"`
-	ContentType             string            `wrp:"content_type,omitempty"`
-	Accept                  string            `wrp:"accept,omitempty"`
-	Status                  *int64            `wrp:"status,omitempty"`
-	RequestDeliveryResponse *int64            `wrp:"rdr,omitempty"`
-	Headers                 []string          `wrp:"headers,omitempty"`
-	Metadata                map[string]string `wrp:"metadata,omitempty"`
-	Spans                   [][]string        `wrp:"spans,omitempty"`
-	IncludeSpans            *bool             `wrp:"include_spans,omitempty"`
-	Path                    string            `wrp:"path,omitempty"`
-	Payload                 []byte            `wrp:"payload,omitempty"`
-	ServiceName             string            `wrp:"service_name,omitempty"`
-	URL                     string            `wrp:"url,omitempty"`
-	PartnerIDs              []string          `wrp:"partner_ids,omitempty"`
+	Type                    MessageType         `wrp:"msg_type"`
+	Source                  string              `wrp:"source,omitempty"`
+	Destination             string              `wrp:"dest,omitempty"`
+	TransactionUUID         string              `wrp:"transaction_uuid,omitempty"`
+	ContentType             string              `wrp:"content_type,omitempty"`
+	Accept                  string              `wrp:"accept,omitempty"`
+	Status                  *int64              `wrp:"status,omitempty"`
+	RequestDeliveryResponse *int64              `wrp:"rdr,omitempty"`
+	Headers                 []string            `wrp:"headers,omitempty"`
+	Metadata                map[string]string   `wrp:"metadata,omitempty"`
+	Spans                   [][]string          `wrp:"spans,omitempty"`
+	IncludeSpans            *bool               `wrp:"include_spans,omitempty"`
+	Path                    string              `wrp:"path,omitempty"`
+	Payload                 []byte              `wrp:"payload,omitempty"`
+	ServiceName             string              `wrp:"service_name,omitempty"`
+	URL                     string              `wrp:"url,omitempty"`
+	PartnerIDs              []string            `wrp:"partner_ids,omitempty"`
+	Traces                  []map[string]string `wrp:"traces,omitempty"`
 }
 
 func (msg *Message) MessageType() MessageType {
@@ -92,6 +93,10 @@ func (msg *Message) To() string {
 
 func (msg *Message) From() string {
 	return msg.Source
+}
+
+func (msg *Message) HasMoney() bool {
+	return msg.Traces != nil
 }
 
 func (msg *Message) IsTransactionPart() bool {

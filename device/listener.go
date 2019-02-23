@@ -1,6 +1,8 @@
 package device
 
 import (
+	"context"
+
 	"github.com/Comcast/webpa-common/wrp"
 )
 
@@ -95,10 +97,25 @@ type Event struct {
 	// data structure.
 	Contents []byte
 
+	// Ctx adds context to Event types to get the same functionally context package functionality as a http request would.
+	//
+	// For now ctx is used to carry money httptrackers is added to carry throughout the pumps.
+	Context context.Context
+
 	// Error is the error which occurred during an attempt to send a message.  This field is only populated
 	// for MessageFailed events when there was an actual error.  For MessageFailed events that indicate a
 	// device was disconnected with enqueued messages, this field will be nil.
 	Error error
+}
+
+// WithContext is returns an Event modified with context.
+func (e Event) WithContext(ctx context.Context) Event {
+	if ctx == nil {
+		panic("nil context")
+	}
+
+	e.Context = ctx
+	return e
 }
 
 // Listener is an event sink.  Listeners should never modify events and should never
