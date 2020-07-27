@@ -239,8 +239,11 @@ func (m *manager) dispatch(e *Event) {
 // dispatches message failed events for any messages that were waiting to be delivered
 // at the time of pump closure.
 func (m *manager) pumpClose(d *device, c io.Closer, reason CloseReason) {
-	// remove will invoke requestClose()
-	m.devices.remove(d.id, reason)
+
+	if !m.isDeviceDuplicated(d) {
+		// remove will invoke requestClose()
+		m.devices.remove(d.id, reason)
+	}
 
 	closeError := c.Close()
 
@@ -492,4 +495,12 @@ func (m *manager) Route(request *Request) (*Response, error) {
 	} else {
 		return nil, ErrorDeviceNotFound
 	}
+}
+
+func (m *manager) isDeviceDuplicated(d *device) bool {
+	existing, ok := m.devices.get(d.id)
+	if !ok {
+		return false
+	}
+	return existing.state != d.state
 }
