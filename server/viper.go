@@ -2,9 +2,6 @@ package server
 
 import (
 	"fmt"
-	"os"
-	"runtime"
-	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -59,80 +56,13 @@ const (
 
 	// FileFlagShorthand is the command-line shortcut flag for FileFlagName
 	FileFlagShorthand = "f"
-
-	// CPUProfileFlagName is the command-line flag for creating a cpuprofile on the server
-	CPUProfileFlagName = "cpuprofile"
-
-	// CPUProfileShortHand is the command-line shortcut for creating cpushorthand on the server
-	CPUProfileShorthand = "c"
-
-	// MemProfileFlagName is the command-line flag for creating memprofile on the server
-	MemProfileFlagName = "memprofile"
-
-	// MemProfileShortHand is the command-line shortcut for creating memprofile on the server
-	MemProfileShorthand = "m"
 )
 
 // ConfigureFlagSet adds the standard set of WebPA flags to the supplied FlagSet.  Use of this function
 // is optional, and necessary only if the standard flags should be supported.  However, this is highly desirable,
-// as ConfigureViper can make use of the standard flags to tailor how configuration is loaded or if gathering cpuprofile
-// or memprofile data is needed.
+// as ConfigureViper can make use of the standard flags to tailor how configuration is loaded.
 func ConfigureFlagSet(applicationName string, f *pflag.FlagSet) {
 	f.StringP(FileFlagName, FileFlagShorthand, applicationName, "base name of the configuration file")
-	f.StringP(CPUProfileFlagName, CPUProfileShorthand, "cpuprofile", "base name of the cpuprofile file")
-	f.StringP(MemProfileFlagName, MemProfileShorthand, "memprofile", "base name of the memprofile file")
-}
-
-// create CPUProfileFiles creates a cpu profile of the server, its triggered by the optional flag cpuprofile
-//
-// the CPU profile is created on the server's start
-func CreateCPUProfileFile(v *viper.Viper, fp *pflag.FlagSet, l log.Logger) {
-	if fp == nil {
-		return
-	}
-
-	flag := fp.Lookup("cpuprofile")
-	if flag == nil {
-		return
-	}
-
-	f, err := os.Create(flag.Value.String())
-	if err != nil {
-		l.Log("could not create CPU profile: ", err)
-	}
-	defer f.Close()
-
-	if err := pprof.StartCPUProfile(f); err != nil {
-		l.Log("could not start CPU profile: ", err)
-	}
-
-	defer pprof.StopCPUProfile()
-}
-
-// Create CPUProfileFiles creates a memory profile of the server, its triggered by the optional flag memprofile
-//
-// the memory profile is created on the server's exit.
-// this function should be used within the application.
-func CreateMemoryProfileFile(v *viper.Viper, fp *pflag.FlagSet, l log.Logger) {
-	if fp == nil {
-		return
-	}
-
-	flag := fp.Lookup("memprofile")
-	if flag == nil {
-		return
-	}
-
-	f, err := os.Create(flag.Value.String())
-	if err != nil {
-		l.Log("could not create memory profile: ", err)
-	}
-
-	defer f.Close()
-	runtime.GC()
-	if err := pprof.WriteHeapProfile(f); err != nil {
-		l.Log("could not write memory profile: ", err)
-	}
 }
 
 // ConfigureViper configures a Viper instances using the opinionated WebPA settings.  All WebPA servers should
@@ -287,8 +217,6 @@ func Initialize(applicationName string, arguments []string, f *pflag.FlagSet, v 
 	if err != nil {
 		return
 	}
-
-	CreateCPUProfileFile(v, f, logger)
 
 	return
 }

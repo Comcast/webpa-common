@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -184,97 +183,4 @@ func TestInitializeMetrics(t *testing.T) {
 
 	assert.Equal("foo", w.Metric.MetricsOptions.Namespace)
 	assert.Equal("bar", w.Metric.MetricsOptions.Subsystem)
-}
-
-func TestCreateCPUProfiles(t *testing.T) {
-	t.Run("test case with flag", testCreateCPUProfileFile)
-	t.Run("test case with no flag", testCreateMemProfileFileNoFlag)
-}
-
-// ./app --cpuprofile=filename
-func testCreateCPUProfileFile(t *testing.T) {
-	var (
-		v         = viper.New()
-		f         = pflag.NewFlagSet("test", pflag.ContinueOnError)
-		app       = ""
-		inputFlag = "--cpuprofile=file"
-		_         = f.StringP(CPUProfileFlagName, CPUProfileShorthand, "cpuprofile", "base name of the cpuprofile file")
-		input     = []string{app, inputFlag}
-	)
-
-	f.Parse(input)
-	// ./themis --cpuprofile=filename
-
-	CreateCPUProfileFile(v, f, nil)
-
-	if _, err := os.Stat("file"); os.IsNotExist(err) {
-		t.Fatalf("Expecting file to exist")
-	}
-
-	if _, err := os.Stat("file"); !os.IsNotExist(err) {
-		os.Remove("cpuprofile")
-	}
-}
-
-// testCreateCPUProfileFileNoFlag tests if function completes fine without the desired flag
-// --cpupropfile=""
-func testCreateCPUProfileFileNoFlag(t *testing.T) {
-	var (
-		v         = viper.New()
-		f         = pflag.NewFlagSet("test", pflag.ContinueOnError)
-		app       = "testApp"
-		inputFlag = ""
-		_         = f.StringP(CPUProfileFlagName, CPUProfileShorthand, "cpuprofile", "base name of the cpuprofile file")
-		input     = []string{app, inputFlag}
-	)
-
-	f.Parse(input)
-
-	CreateCPUProfileFile(v, f, nil)
-}
-
-func TestCreateMemProfiles(t *testing.T) {
-	t.Run("test case with flag", testCreateMemProfileFile)
-	t.Run("test case with no flag", testCreateMemProfileFileNoFlag)
-}
-
-func testCreateMemProfileFile(t *testing.T) {
-	var (
-		v         = viper.New()
-		f         = pflag.NewFlagSet("test", pflag.ContinueOnError)
-		app       = "testApp"
-		inputFlag = "--memprofile=file"
-
-		_     = f.StringP(MemProfileFlagName, MemProfileShorthand, "memprofile", "base name of the memprofile file")
-		input = []string{app, inputFlag}
-	)
-
-	f.Parse(input)
-
-	CreateMemoryProfileFile(v, f, nil)
-
-	if _, err := os.Stat("file"); os.IsNotExist(err) {
-		t.Fatalf("Expecting file to exist")
-	}
-
-	if _, err := os.Stat("file"); !os.IsNotExist(err) {
-		os.Remove("file")
-	}
-}
-
-// testCreateCPUProfileFileNoFlag tests if function completes fine without the desired flag
-// --memprofile=""
-func testCreateMemProfileFileNoFlag(t *testing.T) {
-	var (
-		v         = viper.New()
-		f         = pflag.NewFlagSet("test", pflag.ContinueOnError)
-		app       = "testApp"
-		inputFlag = ""
-		_         = f.StringP(MemProfileFlagName, MemProfileShorthand, "memprofile", "base name of the memprofile file")
-		input     = []string{app, inputFlag}
-	)
-
-	f.Parse(input)
-
-	CreateMemoryProfileFile(v, f, nil)
 }
