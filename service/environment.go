@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/go-kit/kit/metrics/provider"
 	"github.com/go-kit/kit/sd"
+	"github.com/xmidt-org/webpa-common/xmetrics"
 )
 
 var (
@@ -50,7 +50,7 @@ type Environment interface {
 
 	// Provider returns the metrics provider that is associated with this environment
 	// Mainly used for the argus chrysom client
-	Provider() provider.Provider
+	Provider() xmetrics.Registry
 }
 
 // Option represents a service discovery option for configuring an Environment
@@ -113,7 +113,7 @@ func WithCloser(f func() error) Option {
 }
 
 // WithProvider configures the metrics provider for the environment
-func WithProvider(p provider.Provider) Option {
+func WithProvider(p xmetrics.Registry) Option {
 	return func(e *environment) {
 		if p != nil {
 			e.provider = p
@@ -143,7 +143,7 @@ type environment struct {
 	registrars      Registrars
 	instancers      Instancers
 	accessorFactory AccessorFactory
-	provider        provider.Provider
+	provider        xmetrics.Registry
 
 	lock      sync.RWMutex
 	closeOnce sync.Once
@@ -223,6 +223,6 @@ func (e *environment) Close() (err error) {
 	return
 }
 
-func (e *environment) Provider() provider.Provider {
+func (e *environment) Provider() xmetrics.Registry {
 	return e.provider
 }

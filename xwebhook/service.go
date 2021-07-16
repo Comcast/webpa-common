@@ -1,10 +1,26 @@
+/**
+ * Copyright 2021 Comcast Cable Communications Management, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package xwebhook
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/xmidt-org/webpa-common/logging"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -12,6 +28,8 @@ import (
 	"github.com/xmidt-org/argus/chrysom"
 	"github.com/xmidt-org/argus/model"
 	"github.com/xmidt-org/argus/store"
+	"github.com/xmidt-org/webpa-common/logging"
+	"github.com/xmidt-org/webpa-common/xmetrics"
 )
 
 // Service describes the core operations around webhook subscriptions.
@@ -119,14 +137,18 @@ func newLoggerGroup(root log.Logger) *loggerGroup {
 
 // Initialize builds the webhook service from the given configuration. It allows adding watchers for the internal subscription state. Call the returned
 // function when you are done watching for updates.
-func Initialize(cfg *Config, watches ...Watch) (Service, func(), error) {
+func Initialize(cfg *Config, provider xmetrics.Registry, watches ...Watch) (Service, func(), error) {
 	validateConfig(cfg)
 
-	watches = append(watches, webhookListSizeWatch(cfg.Argus.Listen.MetricsProvider.NewGauge(WebhookListSizeGauge)))
+	watches = append(watches, webhookListSizeWatch(provider.NewGauge(WebhookListSizeGauge)))
 
 	cfg.Argus.Listen.Listener = createArgusListener(watches...)
 
-	argus, err := chrysom.NewClient(cfg.Argus, nil)
+	m := &chrysom.Measures{
+		Polls: provider.NewCounterVec(chrysom.PollCounter),
+	}
+
+	argus, err := chrysom.NewClient(cfg.Argus, m, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}

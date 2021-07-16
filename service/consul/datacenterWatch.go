@@ -55,8 +55,8 @@ func newDatacenterWatcher(logger log.Logger, environment Environment, options Op
 		inactiveDatacenters: make(map[string]bool),
 	}
 
-	if len(options.ChrysomConfig.Bucket) > 0 {
-		if options.ChrysomConfig.Listen.PullInterval <= 0 {
+	if len(options.Chrysom.Bucket) > 0 {
+		if options.Chrysom.Listen.PullInterval <= 0 {
 			return nil, errors.New("chrysom pull interval cannot be 0")
 		}
 
@@ -65,16 +65,17 @@ func newDatacenterWatcher(logger log.Logger, environment Environment, options Op
 			return nil, errors.New("must pass in a metrics provider")
 		}
 
-		options.ChrysomConfig.Listen.MetricsProvider = environment.Provider()
-
 		var datacenterListenerFunc chrysom.ListenerFunc = func(items chrysom.Items) {
 			updateInactiveDatacenters(items, datacenterWatcher.inactiveDatacenters, &datacenterWatcher.lock, logger)
 		}
 
-		options.ChrysomConfig.Listen.Listener = datacenterListenerFunc
+		options.Chrysom.Listen.Listener = datacenterListenerFunc
+		options.Chrysom.Logger = logger
 
-		options.ChrysomConfig.Logger = logger
-		chrysomClient, err := chrysom.NewClient(options.ChrysomConfig, nil)
+		m := &chrysom.Measures{
+			Polls: environment.Provider().NewCounterVec(chrysom.PollCounter),
+		}
+		chrysomClient, err := chrysom.NewClient(options.Chrysom, m, getLogger, logging.WithLogger)
 
 		if err != nil {
 			return nil, err
@@ -83,11 +84,13 @@ func newDatacenterWatcher(logger log.Logger, environment Environment, options Op
 		//create chrysom client and start it
 		datacenterWatcher.chrysomClient = chrysomClient
 		datacenterWatcher.chrysomClient.Start(context.Background())
+		logger.Log(level.Key(), level.DebugValue(), logging.MessageKey(), "started chrysom, argus client")
 	}
 
 	//start consul watch
 	ticker := time.NewTicker(datacenterWatcher.consulWatchInterval)
 	go datacenterWatcher.watchDatacenters(ticker)
+	logger.Log(level.Key(), level.DebugValue(), logging.MessageKey(), "started consul datacenter watch")
 
 	return datacenterWatcher, nil
 
@@ -205,4 +208,9 @@ func createNewInstancer(keys map[string]bool, instancersToAdd service.Instancers
 
 	// create new instancer and add it to the map of instancers to add
 	instancersToAdd.Set(key, newInstancer(dw.logger, dw.environment.Client(), w))
+}
+
+func getLogger(ctx context.Context) log.Logger {
+	logger := log.With(logging.GetLogger(ctx), "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+	return logger
 }

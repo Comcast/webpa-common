@@ -15,26 +15,16 @@
  *
  */
 
-package xwebhook
+package consul
 
 import (
 	"github.com/xmidt-org/argus/chrysom"
 	"github.com/xmidt-org/webpa-common/xmetrics"
 )
 
-// Names
-const (
-	WebhookListSizeGauge = "webhook_list_size_value"
-)
-
 // Metrics returns the Metrics relevant to this package
 func Metrics() []xmetrics.Metric {
 	metrics := []xmetrics.Metric{
-		{
-			Name: WebhookListSizeGauge,
-			Type: xmetrics.GaugeType,
-			Help: "Size of the current list of webhooks.",
-		},
 		{
 			Name:       chrysom.PollCounter,
 			Type:       xmetrics.CounterType,

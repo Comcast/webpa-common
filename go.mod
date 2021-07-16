@@ -17,7 +17,7 @@ require (
 	github.com/jtacoma/uritemplates v1.0.0
 	github.com/justinas/alice v1.2.0
 	github.com/miekg/dns v1.1.26
-	github.com/mitchellh/mapstructure v1.3.3
+	github.com/mitchellh/mapstructure v1.4.1
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rubyist/circuitbreaker v2.2.0+incompatible
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
@@ -27,7 +27,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go/codec v1.1.7
-	github.com/xmidt-org/argus v0.4.0
+	github.com/xmidt-org/argus v0.4.2-0.20210701003127-e40ba2e513a4
 	github.com/xmidt-org/bascule v0.10.1
 	github.com/xmidt-org/candlelight v0.0.5
 	github.com/xmidt-org/themis v0.4.7
